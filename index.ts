@@ -3,6 +3,8 @@ let fragShaderSrc = require('./frag-shader.glsl')
 // import { factorial } from './example.rs'
 import * as glMatrix from 'gl-matrix'
 let canvas = document.getElementById('canv') as HTMLCanvasElement | null
+canvas.style.width = window.innerHeight + 'px'
+canvas.style.height = window.innerHeight + 'px'
 
 function getWebglContext(): WebGLRenderingContext {
 
@@ -15,7 +17,7 @@ function getWebglContext(): WebGLRenderingContext {
 
 let gl = getWebglContext()
 gl.enable(gl.DEPTH_TEST)
-// gl.enable(gl.CULL_FACE)
+gl.enable(gl.CULL_FACE)
 
 
 function createShader(context, type, src) {
@@ -48,54 +50,44 @@ if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
 gl.clearColor(0, 0, 0, 1)
 gl.useProgram(program)
 
-
-
-    // create buffers
-    function rand() {
-        return [Math.random() * 2 - 1, Math.random() * 2 - 1, 0]
-    }
-
-    function colorRand() {
-        return [Math.random(), Math.random(), Math.random()]
-    }
     var boxVertices = 
-	[ // X, Y, Z           R, G, B
+	[ // X, Y, Z           U, V
 		// Top
-		-1.0, 1.0, -1.0,   0.5, 0.5, 0.5,
-		-1.0, 1.0, 1.0,    0.5, 0.5, 0.5,
-		1.0, 1.0, 1.0,     0.5, 0.5, 0.5,
-		1.0, 1.0, -1.0,    0.5, 0.5, 0.5,
+		-1.0, 1.0, -1.0,   0, 0,
+		-1.0, 1.0, 1.0,    0, 1,
+		1.0, 1.0, 1.0,     1, 1,
+		1.0, 1.0, -1.0,    1, 0,
 
 		// Left
-		-1.0, 1.0, 1.0,    0.75, 0.25, 0.5,
-		-1.0, -1.0, 1.0,   0.75, 0.25, 0.5,
-		-1.0, -1.0, -1.0,  0.75, 0.25, 0.5,
-		-1.0, 1.0, -1.0,   0.75, 0.25, 0.5,
+		-1.0, 1.0, 1.0,    0, 0,
+		-1.0, -1.0, 1.0,   1, 0,
+		-1.0, -1.0, -1.0,  1, 1,
+		-1.0, 1.0, -1.0,   0, 1,
 
 		// Right
-		1.0, 1.0, 1.0,    0.25, 0.25, 0.75,
-		1.0, -1.0, 1.0,   0.25, 0.25, 0.75,
-		1.0, -1.0, -1.0,  0.25, 0.25, 0.75,
-		1.0, 1.0, -1.0,   0.25, 0.25, 0.75,
+		1.0, 1.0, 1.0,    1, 1,
+		1.0, -1.0, 1.0,   0, 1,
+		1.0, -1.0, -1.0,  0, 0,
+		1.0, 1.0, -1.0,   1, 0,
 
 		// Front
-		1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
-		1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
-		-1.0, -1.0, 1.0,    1.0, 0.0, 0.15,
-		-1.0, 1.0, 1.0,    1.0, 0.0, 0.15,
+		1.0, 1.0, 1.0,    1, 1,
+		1.0, -1.0, 1.0,    1, 0,
+		-1.0, -1.0, 1.0,    0, 0,
+		-1.0, 1.0, 1.0,    0, 1,
 
 		// Back
-		1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
-		1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
-		-1.0, -1.0, -1.0,    0.0, 1.0, 0.15,
-		-1.0, 1.0, -1.0,    0.0, 1.0, 0.15,
+		1.0, 1.0, -1.0,    0, 0,
+		1.0, -1.0, -1.0,    0, 1,
+		-1.0, -1.0, -1.0,    1, 1,
+		-1.0, 1.0, -1.0,    1, 0,
 
 		// Bottom
-		-1.0, -1.0, -1.0,   0.5, 0.5, 1.0,
-		-1.0, -1.0, 1.0,    0.5, 0.5, 1.0,
-		1.0, -1.0, 1.0,     0.5, 0.5, 1.0,
-		1.0, -1.0, -1.0,    0.5, 0.5, 1.0,
-	];
+		-1.0, -1.0, -1.0,   1, 1,
+		-1.0, -1.0, 1.0,    1, 0,
+		1.0, -1.0, 1.0,     0, 0,
+        1.0, -1.0, -1.0,    0, 1,
+    ]
 	var boxIndices =
 	[
 		// Top
@@ -133,12 +125,22 @@ gl.useProgram(program)
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.DYNAMIC_DRAW)
 
     let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition')
-    gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 0)
+    gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 0)
     gl.enableVertexAttribArray(positionAttribLocation)
 
-    let colorAttribLocation = gl.getAttribLocation(program, 'vertColor')
-    gl.vertexAttribPointer(colorAttribLocation, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT)
-    gl.enableVertexAttribArray(colorAttribLocation)
+    let texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord')
+    gl.vertexAttribPointer(texCoordAttribLocation, 2, gl.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT)
+    gl.enableVertexAttribArray(texCoordAttribLocation)
+
+    let boxTexture = gl.createTexture()
+    let imageTexture: HTMLImageElement = document.getElementById('crate-texture') as HTMLImageElement
+    gl.bindTexture(gl.TEXTURE_2D, boxTexture)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imageTexture)
+    gl.bindTexture(gl.TEXTURE_2D, null)
 
     gl.useProgram(program)
     let matWorldUniformLocation = gl.getUniformLocation(program, 'mWorld')
@@ -151,7 +153,7 @@ gl.useProgram(program)
 
     glMatrix.mat4.identity(worldMatrix)
     glMatrix.mat4.lookAt(viewMatrix, [0, 0, -8], [0, 0, 0], [0, 1, 0])
-    glMatrix.mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width/canvas.height, 0.1, 1000)
+    glMatrix.mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(50), canvas.width/canvas.height, 0.1, 1000)
 
     gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix)
     gl.uniformMatrix4fv(matViewUniformLocation, false, viewMatrix)
@@ -167,6 +169,8 @@ gl.useProgram(program)
         gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix)
         gl.clearColor(0, Math.abs(1 - Math.tan(angle)), Math.abs(1 / Math.sin(angle)), 1)
         gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.bindTexture(gl.TEXTURE_2D, boxTexture)
+        gl.activeTexture(gl.TEXTURE0)
         gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0)
         requestAnimationFrame(loop)
     }
